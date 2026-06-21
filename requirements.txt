@@ -1,0 +1,7 @@
+dspy
+dspy[optuna]
+pydantic
+pytest
+python-dotenv
+pandas
+rich
