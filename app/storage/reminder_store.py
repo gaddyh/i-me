@@ -61,7 +61,7 @@ class ReminderStore:
                     reminder.id,
                     reminder.chat_id,
                     reminder.text,
-                    reminder.target_time.isoformat(),
+                    reminder.target_time.astimezone(timezone.utc).isoformat(),
                     reminder.status,
                     reminder.created_at.isoformat(),
                     reminder.updated_at.isoformat(),
