@@ -1,7 +1,8 @@
-dspy
-dspy[optuna]
 pydantic
 pytest
 python-dotenv
-pandas
-rich
+fastapi
+uvicorn
+httpx
+openai
+python-multipart
