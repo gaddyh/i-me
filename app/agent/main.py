@@ -1,21 +1,23 @@
 import asyncio
 import logging
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from app.agent.dspy_config import configure_dspy_once
-from app.agent.react_agent import WhatsAppReActAgent
+from app.agent.single_turn_agent import WhatsAppSingleTurnAgent
 
 logger = logging.getLogger("greenapi-bot")
 
-_agent: WhatsAppReActAgent | None = None
+_agent: WhatsAppSingleTurnAgent | None = None
 
 
-def get_agent() -> WhatsAppReActAgent:
+def get_agent() -> WhatsAppSingleTurnAgent:
     global _agent
 
     configure_dspy_once()
 
     if _agent is None:
-        _agent = WhatsAppReActAgent()
+        _agent = WhatsAppSingleTurnAgent(max_steps=1)
 
     return _agent
 
@@ -26,13 +28,26 @@ async def process_message(chat_id: str, text: str) -> str:
     if not clean_text:
         return "I got an empty message."
 
+    timezone = "Asia/Jerusalem"
+    now = datetime.now(ZoneInfo(timezone)).strftime("%Y-%m-%d %H:%M:%S")
+
     agent = get_agent()
 
     try:
         prediction = await asyncio.to_thread(
             agent,
             user_input=clean_text,
+            now=now,
+            timezone=timezone,
         )
+
+        logger.info(
+            "Agent decision chat_id=%s selected_fn=%s args=%s",
+            chat_id,
+            prediction.selected_fn,
+            prediction.args,
+        )
+
         return prediction.response.strip()
 
     except Exception as e:

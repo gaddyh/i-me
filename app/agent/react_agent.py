@@ -1,7 +1,7 @@
 import dspy
 
 from app.agent.signatures import WhatsAppReActSignature
-
+from app.agent.tools import create_reminder
 
 class WhatsAppReActAgent(dspy.Module):
     def __init__(self):
@@ -9,7 +9,7 @@ class WhatsAppReActAgent(dspy.Module):
 
         self.react = dspy.ReAct(
             signature=WhatsAppReActSignature,
-            tools=[],
+            tools=[create_reminder],
             max_iters=6,
         )
 
