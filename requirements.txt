@@ -1,8 +1,5 @@
-pydantic
-pytest
-python-dotenv
 fastapi
-uvicorn
+uvicorn[standard]
 httpx
+python-dotenv
 openai
-python-multipart
