@@ -58,6 +58,7 @@ class WhatsAppSingleTurnAgent(dspy.Module):
                 args = parse_args_json(pred.args_json)
                 _inject_context(self.functions[selected_fn], args, chat_id=chat_id)
 
+            logger.info("Calling tool: %s args=%s", selected_fn, args)
             try:
                 fn_output = self.functions[selected_fn](**args)
             except TypeError as e:

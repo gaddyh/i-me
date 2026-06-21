@@ -29,6 +29,10 @@ def create_reminder(
         timezone: IANA timezone. Default Asia/Jerusalem.
         chat_id: WhatsApp chat ID for delivery. Injected by the agent framework.
     """
+    logger.info(
+        "Tool called: create_reminder chat_id=%s text=%r date=%s time=%s",
+        chat_id, reminder_text, remind_date, remind_time,
+    )
     try:
         tz = ZoneInfo(timezone)
         target_time = datetime.strptime(
@@ -53,6 +57,7 @@ def create_reminder(
         await _reminder_store.create(reminder)
 
     asyncio.run(_persist())
+    logger.info("Reminder persisted id=%s chat_id=%s target=%s", reminder.id, chat_id, target_time.isoformat())
 
     return {
         "return_value": (
