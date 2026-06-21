@@ -13,6 +13,9 @@ def get_chat_id(payload: dict[str, Any]) -> str | None:
     sender_data = payload.get("senderData") or {}
     return sender_data.get("chatId")
 
+def get_chat_name(payload: dict[str, Any]) -> str | None:
+    sender_data = payload.get("senderData") or {}
+    return sender_data.get("chatName")
 
 def get_message_data(payload: dict[str, Any]) -> dict[str, Any]:
     return payload.get("messageData") or {}

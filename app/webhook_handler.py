@@ -8,6 +8,7 @@ from app.webhook import (
     extract_extended_text_message,
     extract_text_message,
     get_chat_id,
+    get_chat_name,
     get_message_data,
     get_message_id,
     get_message_type,
@@ -26,12 +27,12 @@ async def handle_green_api_webhook(payload: dict[str, Any]) -> dict[str, Any]:
     #if type_webhook != "incomingMessageReceived":
     #    return {"ok": True, "ignored": type_webhook}
 
-    chat_id = get_chat_id(payload)
+    chat_id = get_chat_name(payload)
 
     if not chat_id:
         return {"ok": False, "error": "Missing senderData.chatId"}
 
-    logger.info("Incoming message from chat_id=%s", chat_id)
+    logger.info("Incoming message from chat_id=%s, chat_name=%s", chat_id, chat_id)
 
     if chat_id not in settings.allowed_chat_ids:
         logger.info("Ignoring message from non-allowed chat_id=%s", chat_id)
