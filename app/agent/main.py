@@ -44,6 +44,7 @@ async def process_message(chat_id: str, text: str) -> str:
             now=now,
             timezone=timezone,
             conversation_history=conversation_history,
+            chat_id=chat_id,
         )
 
         logger.info(

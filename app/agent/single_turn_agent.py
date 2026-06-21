@@ -1,3 +1,4 @@
+import inspect
 import json
 import logging
 from typing import Any, Callable
@@ -29,6 +30,7 @@ class WhatsAppSingleTurnAgent(dspy.Module):
         now: str,
         timezone: str = "Asia/Jerusalem",
         conversation_history: str = "[]",
+        chat_id: str = "",
     ) -> dspy.Prediction:
         tools_json = functions_metadata(self.functions)
         trajectory: list[dict[str, Any]] = []
@@ -54,6 +56,7 @@ class WhatsAppSingleTurnAgent(dspy.Module):
                 }
             else:
                 args = parse_args_json(pred.args_json)
+                _inject_context(self.functions[selected_fn], args, chat_id=chat_id)
 
             try:
                 fn_output = self.functions[selected_fn](**args)
@@ -82,6 +85,13 @@ class WhatsAppSingleTurnAgent(dspy.Module):
             args=trajectory[-1]["args"] if trajectory else {},
             trajectory=trajectory,
         )
+
+
+def _inject_context(fn: Callable[..., Any], args: dict[str, Any], **context: Any) -> None:
+    sig = inspect.signature(fn)
+    for key, value in context.items():
+        if key in sig.parameters and key not in args:
+            args[key] = value
 
 
 def clean_fn_name(value: str) -> str:
