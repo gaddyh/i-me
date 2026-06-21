@@ -1,4 +1,5 @@
 import logging
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -8,7 +9,7 @@ from app.storage.models import Reminder
 
 logger = logging.getLogger("greenapi-bot")
 
-_DB_PATH = Path("data/reminders.db")
+_DB_PATH = Path(os.getenv("DATA_DIR", "data")) / "reminders.db"
 
 
 def _get_db(path: Path = _DB_PATH) -> aiosqlite.Connection:
