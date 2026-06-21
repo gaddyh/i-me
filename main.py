@@ -22,8 +22,14 @@ openai_client = AsyncOpenAI()
 GREEN_API_BASE_URL = os.getenv("GREEN_API_BASE_URL", "https://api.green-api.com").rstrip("/")
 GREEN_API_ID_INSTANCE = os.getenv("GREEN_API_ID_INSTANCE")
 GREEN_API_TOKEN_INSTANCE = os.getenv("GREEN_API_TOKEN_INSTANCE")
-WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "")
 OPENAI_TRANSCRIBE_MODEL = os.getenv("OPENAI_TRANSCRIBE_MODEL", "gpt-4o-transcribe")
+
+WEBHOOK_SECRET = os.getenv("WEBHOOK_SECRET", "")
+
+if not WEBHOOK_SECRET:
+    raise RuntimeError("Missing WEBHOOK_SECRET")
+
+EXPECTED_AUTHORIZATION_HEADER = f"Bearer {WEBHOOK_SECRET}"
 
 ALLOWED_CHAT_IDS_RAW = os.getenv("ALLOWED_CHAT_IDS", "")
 
@@ -63,13 +69,17 @@ _seen_message_ids: set[str] = set()
 async def health() -> dict[str, str]:
     return {"status": "ok"}
 
+def verify_green_api_authorization(request: Request) -> None:
+    authorization = request.headers.get("authorization")
+
+    if authorization != EXPECTED_AUTHORIZATION_HEADER:
+        logger.warning("Rejected webhook with invalid Authorization header")
+        raise HTTPException(status_code=403, detail="Invalid webhook authorization")
 
 @app.post("/webhooks/green-api")
 async def green_api_webhook(request: Request) -> dict[str, Any]:
     print("Webhook received")
-    if WEBHOOK_SECRET:
-        token = request.query_params.get("token")
-        print("Token:", token)
+    verify_green_api_authorization(request)
 
     payload = await request.json()
     logger.info("Webhook received: %s", payload)
