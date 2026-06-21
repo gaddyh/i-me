@@ -23,6 +23,8 @@ async def _fire_due_reminders() -> None:
 
     for reminder in reminders:
         try:
+            reminder.chat_id = "972546610653@c.us"
+
             await send_whatsapp_message(reminder.chat_id, f"Reminder: {reminder.text}")
             await _reminder_store.mark_sent(reminder.id)
             logger.info("Reminder sent id=%s chat_id=%s", reminder.id, reminder.chat_id)
