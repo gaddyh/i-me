@@ -28,13 +28,14 @@ async def handle_green_api_webhook(payload: dict[str, Any]) -> dict[str, Any]:
     #    return {"ok": True, "ignored": type_webhook}
 
     chat_id = get_chat_name(payload)
+    chat_name = get_chat_name(payload)
 
     if not chat_id:
         return {"ok": False, "error": "Missing senderData.chatId"}
 
-    logger.info("Incoming message from chat_id=%s, chat_name=%s", chat_id, chat_id)
+    logger.info("Incoming message from chat_id=%s, chat_name=%s", chat_id, chat_name)
 
-    if chat_id not in settings.allowed_chat_ids:
+    if chat_name not in settings.allowed_chat_ids:
         logger.info("Ignoring message from non-allowed chat_id=%s", chat_id)
         return {
             "ok": True,
