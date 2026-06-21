@@ -41,6 +41,7 @@ async def handle_green_api_webhook(payload: dict[str, Any]) -> dict[str, Any]:
             "ok": True,
             "ignored": "chat_not_allowed",
             "chatId": chat_id,
+            "chatName": chat_name,
         }
 
     message_id = get_message_id(payload)
@@ -79,5 +80,12 @@ async def handle_green_api_webhook(payload: dict[str, Any]) -> dict[str, Any]:
 
     except Exception as e:
         logger.exception("Failed handling webhook")
-        await send_whatsapp_message(chat_id, f"Error while handling message: {e}")
+        await safe_send_error_message(chat_id, e)
         return {"ok": False, "error": str(e)}
+
+
+async def safe_send_error_message(chat_id: str, error: Exception) -> None:
+    try:
+        await send_whatsapp_message(chat_id, f"Error while handling message: {error}")
+    except Exception:
+        logger.exception("Failed sending error message to chat_id=%s", chat_id)

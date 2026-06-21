@@ -3,3 +3,7 @@ uvicorn[standard]
 httpx
 python-dotenv
 openai
+dspy
+dspy[optuna]
+pydantic
+pytest

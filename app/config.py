@@ -25,6 +25,8 @@ class Settings:
 
     allowed_chat_ids: set[str]
 
+    dspy_model: str
+
 
 def load_settings() -> Settings:
     green_api_base_url = os.getenv(
@@ -64,6 +66,7 @@ def load_settings() -> Settings:
         webhook_secret=webhook_secret,
         expected_authorization_header=f"Bearer {webhook_secret}",
         allowed_chat_ids=allowed_chat_ids,
+        dspy_model=os.getenv("DSPY_MODEL", "openai/gpt-4o-mini"),
     )
 
 
