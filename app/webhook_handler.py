@@ -27,7 +27,7 @@ async def handle_green_api_webhook(payload: dict[str, Any]) -> dict[str, Any]:
     #if type_webhook != "incomingMessageReceived":
     #    return {"ok": True, "ignored": type_webhook}
 
-    chat_id = get_chat_name(payload)
+    chat_id = get_chat_id(payload)
     chat_name = get_chat_name(payload)
 
     if not chat_id:
