@@ -4,57 +4,11 @@ from typing import Any, Callable
 
 import dspy
 
-from app.agent.tool_metadata import (
-    functions_metadata,
-    wrap_function_with_timeout,
-)
+from app.agent.signatures import ToolSelectionSignature
+from app.agent.tool_metadata import functions_metadata
 from app.agent.tools import AVAILABLE_FUNCTIONS
 
 logger = logging.getLogger("greenapi-bot")
-
-
-class ToolSelectionSignature(dspy.Signature):
-    """
-    You are a WhatsApp personal assistant.
-
-    Decide the next function to call for this single user message.
-
-    Domain:
-    - Create reminders.
-    - Ask clarification when required reminder fields are missing.
-    - Finish when the user is greeting, asking what you can do, or not asking for an action.
-
-    Required fields for create_reminder:
-    - reminder_text
-    - remind_date
-    - remind_time
-
-    Date/time rules:
-    - Use `now` to resolve relative dates like today, tomorrow, Sunday.
-    - Format dates as YYYY-MM-DD.
-    - Format times as HH:MM, 24-hour time.
-    - If date is missing, ask for date.
-    - If time is missing, ask for time.
-    - If reminder text is missing, ask what to remind.
-
-    Function choice rules:
-    - Use create_reminder only when all required fields are present or inferable.
-    - Use ask_clarification when a reminder intent is clear but required fields are missing.
-    - Use finish for non-reminder messages.
-
-    Output rules:
-    - next_selected_fn must be exactly one of the available function names.
-    - args_json must be valid JSON.
-    """
-
-    user_input: str = dspy.InputField(desc="Latest WhatsApp message.")
-    now: str = dspy.InputField(desc="Current local datetime, ISO-like string.")
-    timezone: str = dspy.InputField(desc="User timezone.")
-    trajectory_json: str = dspy.InputField(desc="Previous tool calls in this turn as JSON.")
-    functions_json: str = dspy.InputField(desc="Available functions and schemas as JSON.")
-
-    next_selected_fn: str = dspy.OutputField(desc="Function name to call next.")
-    args_json: str = dspy.OutputField(desc="JSON object of arguments for the selected function.")
 
 
 class WhatsAppSingleTurnAgent(dspy.Module):
@@ -74,6 +28,7 @@ class WhatsAppSingleTurnAgent(dspy.Module):
         user_input: str,
         now: str,
         timezone: str = "Asia/Jerusalem",
+        conversation_history: str = "[]",
     ) -> dspy.Prediction:
         tools_json = functions_metadata(self.functions)
         trajectory: list[dict[str, Any]] = []
@@ -84,6 +39,7 @@ class WhatsAppSingleTurnAgent(dspy.Module):
                 user_input=user_input,
                 now=now,
                 timezone=timezone,
+                conversation_history=conversation_history,
                 trajectory_json=json.dumps(trajectory, ensure_ascii=False),
                 functions_json=tools_json,
             )
@@ -100,9 +56,7 @@ class WhatsAppSingleTurnAgent(dspy.Module):
                 args = parse_args_json(pred.args_json)
 
             try:
-                fn_output = wrap_function_with_timeout(
-                    self.functions[selected_fn]
-                )(**args)
+                fn_output = self.functions[selected_fn](**args)
             except TypeError as e:
                 logger.exception("Tool args mismatch")
                 selected_fn = "ask_clarification"

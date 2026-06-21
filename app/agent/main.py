@@ -5,6 +5,8 @@ from zoneinfo import ZoneInfo
 
 from app.agent.dspy_config import configure_dspy_once
 from app.agent.single_turn_agent import WhatsAppSingleTurnAgent
+from app.config import settings
+from app.storage.conversation_store import conversation_store
 
 logger = logging.getLogger("greenapi-bot")
 
@@ -28,8 +30,10 @@ async def process_message(chat_id: str, text: str) -> str:
     if not clean_text:
         return "I got an empty message."
 
-    timezone = "Asia/Jerusalem"
+    timezone = settings.timezone
     now = datetime.now(ZoneInfo(timezone)).strftime("%Y-%m-%d %H:%M:%S")
+
+    conversation_history = conversation_store.to_json(chat_id)
 
     agent = get_agent()
 
@@ -39,6 +43,7 @@ async def process_message(chat_id: str, text: str) -> str:
             user_input=clean_text,
             now=now,
             timezone=timezone,
+            conversation_history=conversation_history,
         )
 
         logger.info(
@@ -48,7 +53,12 @@ async def process_message(chat_id: str, text: str) -> str:
             prediction.args,
         )
 
-        return prediction.response.strip()
+        response = prediction.response.strip()
+
+        conversation_store.append(chat_id, "user", clean_text)
+        conversation_store.append(chat_id, "assistant", response)
+
+        return response
 
     except Exception as e:
         logger.exception("Agent failed")

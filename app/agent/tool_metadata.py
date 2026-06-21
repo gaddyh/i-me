@@ -1,6 +1,5 @@
 import inspect
 import json
-import signal
 from typing import Any, Callable
 
 
@@ -43,17 +42,3 @@ def functions_metadata(functions: dict[str, Callable[..., Any]]) -> str:
         for fn_name, fn in functions.items()
     }
     return json.dumps(metadata, ensure_ascii=False, indent=2)
-
-
-class TimeoutError(Exception):
-    pass
-
-
-def _timeout_handler(signum, frame):
-    raise TimeoutError("Function timed out")
-
-
-def wrap_function_with_timeout(fn, timeout_seconds: int = 5):
-    def wrapped(**kwargs):
-        return fn(**kwargs)
-    return wrapped

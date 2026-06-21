@@ -6,4 +6,7 @@ openai
 dspy
 dspy[optuna]
 pydantic
+aiosqlite
+apscheduler
 pytest
+pytest-asyncio

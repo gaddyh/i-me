@@ -7,6 +7,7 @@ from zoneinfo import ZoneInfo
 
 from app.agent.dspy_config import configure_dspy_once
 from app.agent.single_turn_agent import WhatsAppSingleTurnAgent
+from app.storage.reminder_store import init_db
 
 logging.basicConfig(level=logging.INFO)
 
@@ -19,6 +20,7 @@ async def main() -> None:
 
     text = " ".join(args.message)
 
+    await init_db()
     configure_dspy_once()
 
     now = datetime.now(ZoneInfo(args.timezone)).strftime("%Y-%m-%d %H:%M:%S")
@@ -30,6 +32,7 @@ async def main() -> None:
         user_input=text,
         now=now,
         timezone=args.timezone,
+        conversation_history="[]",
     )
 
     print("\nUSER:")

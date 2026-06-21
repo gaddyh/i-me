@@ -1,16 +1,28 @@
 import logging
+from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import FastAPI, Request
 
 from app.config import settings
+from app.scheduler import start_scheduler, stop_scheduler
 from app.security import verify_green_api_authorization
+from app.storage.reminder_store import init_db
 from app.webhook_handler import handle_green_api_webhook
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("greenapi-bot")
 
-app = FastAPI(title="Green API WhatsApp Bot")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db()
+    start_scheduler()
+    yield
+    stop_scheduler()
+
+
+app = FastAPI(title="Green API WhatsApp Bot", lifespan=lifespan)
 
 
 @app.get("/health")

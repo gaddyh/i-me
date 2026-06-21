@@ -27,6 +27,8 @@ class Settings:
 
     dspy_model: str
 
+    timezone: str
+
 
 def load_settings() -> Settings:
     green_api_base_url = os.getenv(
@@ -67,6 +69,7 @@ def load_settings() -> Settings:
         expected_authorization_header=f"Bearer {webhook_secret}",
         allowed_chat_ids=allowed_chat_ids,
         dspy_model=os.getenv("DSPY_MODEL", "openai/gpt-5.4-mini"),
+        timezone=os.getenv("TIMEZONE", "Asia/Jerusalem"),
     )
 
 

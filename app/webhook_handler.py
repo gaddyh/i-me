@@ -1,9 +1,11 @@
 import logging
 from typing import Any
 
+from app.agent.main import process_message
 from app.audio import handle_audio_message
 from app.config import settings
 from app.green_api import send_whatsapp_message
+from app.storage.reminder_store import ReminderStore
 from app.webhook import (
     extract_extended_text_message,
     extract_text_message,
@@ -14,18 +16,14 @@ from app.webhook import (
     get_message_type,
     get_type_webhook,
 )
-from app.agent.main import process_message
 
 logger = logging.getLogger("greenapi-bot")
 
-_seen_message_ids: set[str] = set()
+_reminder_store = ReminderStore()
 
 
 async def handle_green_api_webhook(payload: dict[str, Any]) -> dict[str, Any]:
     type_webhook = get_type_webhook(payload)
-
-    #if type_webhook != "incomingMessageReceived":
-    #    return {"ok": True, "ignored": type_webhook}
 
     chat_id = get_chat_id(payload)
     chat_name = get_chat_name(payload)
@@ -46,11 +44,11 @@ async def handle_green_api_webhook(payload: dict[str, Any]) -> dict[str, Any]:
 
     message_id = get_message_id(payload)
 
-    if message_id and message_id in _seen_message_ids:
+    if message_id and await _reminder_store.is_seen(message_id):
         return {"ok": True, "duplicate": True}
 
     if message_id:
-        _seen_message_ids.add(message_id)
+        await _reminder_store.mark_seen(message_id)
 
     message_data = get_message_data(payload)
     type_message = get_message_type(payload)

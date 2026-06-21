@@ -1,6 +1,7 @@
 # scripts/evaluate_reminders.py
 
 import argparse
+import asyncio
 import json
 import logging
 from dataclasses import dataclass
@@ -11,6 +12,7 @@ import dspy
 
 from app.agent.dspy_config import configure_dspy_once
 from app.agent.single_turn_agent import WhatsAppSingleTurnAgent
+from app.storage.reminder_store import init_db
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("greenapi-bot")
@@ -170,6 +172,7 @@ def evaluate_rows(
             user_input=ex.user_input,
             now=ex.now,
             timezone=ex.timezone,
+            conversation_history="[]",
         )
 
         selected_fn_ok = (
@@ -327,6 +330,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
+    asyncio.run(init_db())
     configure_dspy_once()
 
     rows = load_jsonl(Path(args.data))
