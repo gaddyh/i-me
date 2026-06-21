@@ -14,6 +14,8 @@ _scheduler = AsyncIOScheduler()
 async def _fire_due_reminders() -> None:
     reminders = await _reminder_store.get_due()
 
+    logger.debug("Scheduler tick: %d due reminder(s)", len(reminders))
+
     if not reminders:
         return
 

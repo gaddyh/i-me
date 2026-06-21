@@ -40,3 +40,11 @@ ENV/
 # OS
 .DS_Store
 Thumbs.db
+
+# SQLite DB
+data/reminders.db
+data/reminders.db-shm
+data/reminders.db-wal
+
+# Eval run outputs
+runs/

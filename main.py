@@ -1,4 +1,5 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 from typing import Any
 
@@ -10,7 +11,8 @@ from app.security import verify_green_api_authorization
 from app.storage.reminder_store import init_db
 from app.webhook_handler import handle_green_api_webhook
 
-logging.basicConfig(level=logging.INFO)
+_log_level = getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper(), logging.INFO)
+logging.basicConfig(level=_log_level)
 logger = logging.getLogger("greenapi-bot")
 
 
