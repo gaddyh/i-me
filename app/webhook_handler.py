@@ -13,6 +13,7 @@ from app.webhook import (
     get_message_type,
     get_type_webhook,
 )
+from app.agent.main import process_message
 
 logger = logging.getLogger("greenapi-bot")
 
@@ -54,18 +55,21 @@ async def handle_green_api_webhook(payload: dict[str, Any]) -> dict[str, Any]:
     try:
         if type_message == "textMessage":
             text = extract_text_message(message_data)
-            await send_whatsapp_message(chat_id, f"Echo: {text}")
+            response = await process_message(chat_id, text)
+            await send_whatsapp_message(chat_id, response)
             return {"ok": True, "handled": "textMessage"}
 
         if type_message == "extendedTextMessage":
             text = extract_extended_text_message(message_data)
-            await send_whatsapp_message(chat_id, f"Echo: {text}")
+            response = await process_message(chat_id, text)
+            await send_whatsapp_message(chat_id, response)
             return {"ok": True, "handled": "extendedTextMessage"}
 
         if type_message == "audioMessage":
             await send_whatsapp_message(chat_id, "Got your audio. Transcribing...")
             transcript = await handle_audio_message(message_data)
-            await send_whatsapp_message(chat_id, f"Transcript:\n{transcript}")
+            response = await process_message(chat_id, transcript)
+            await send_whatsapp_message(chat_id, response)
             return {"ok": True, "handled": "audioMessage"}
 
         logger.info("Ignoring unsupported message type: %s", type_message)
